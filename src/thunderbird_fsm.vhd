@@ -102,14 +102,14 @@ architecture thunderbird_fsm_arch of thunderbird_fsm is
 begin
 
 	-- CONCURRENT STATEMENTS --------------------------------------------------------	
-	f_Q_next(7)    <= f_Q(6) OR f_Q(5);
-	f_Q_next(6)    <= f_Q(7) AND i_left AND i_right;
-	f_Q_next(5)    <= f_Q(4);
-	f_Q_next(4)    <= f_Q(3);
-	f_Q_next(3)    <= f_Q(7) AND i_right;
+	f_Q_next(0)    <= f_Q(7) AND i_left AND i_right;
+	f_Q_next(1)    <= f_Q(7) AND (not i_left) AND i_right;
 	f_Q_next(2)    <= f_Q(1);
-	f_Q_next(1)    <= f_Q(0);
-	f_Q_next(0)    <= f_Q(7) AND i_left;
+	f_Q_next(3)    <= f_Q(2);
+	f_Q_next(4)    <= f_Q(7) AND i_left AND (not i_right);
+	f_Q_next(5)    <= f_Q(4);
+	f_Q_next(6)    <= f_Q(5);
+	f_Q_next(7)    <= ((f_Q(7) AND (not i_left)) AND (not i_right)) OR f_Q(0) OR f_Q(3) OR f_Q(6);
 	
 	o_lights_R(2)  <= f_Q(0) OR f_Q(3);
 	o_lights_R(1)  <= f_Q(0) OR f_Q(3) OR f_Q(2);
