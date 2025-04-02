@@ -40,14 +40,14 @@
 --|                 --------------------
 --|                  State | Encoding
 --|                 --------------------
---|                  OFF   | 
---|                  ON    | 
---|                  R1    | 
---|                  R2    | 
---|                  R3    | 
---|                  L1    | 
---|                  L2    | 
---|                  L3    | 
+--|                  OFF   | 1 0 0 0 0 0 0 0
+--|                  ON    | 0 0 0 0 0 0 0 1
+--|                  R1    | 0 0 0 0 0 0 1 0
+--|                  R2    | 0 0 0 0 0 1 0 0
+--|                  R3    | 0 0 0 0 1 0 0 0
+--|                  L1    | 0 0 0 1 0 0 0 0
+--|                  L2    | 0 0 1 0 0 0 0 0
+--|                  L3    | 0 1 0 0 0 0 0 0
 --|                 --------------------
 --|
 --|
@@ -86,23 +86,52 @@ library ieee;
   use ieee.numeric_std.all;
  
 entity thunderbird_fsm is 
---  port(
-	
---  );
+  port(
+	i_clk, i_reset     : in    std_logic;
+	i_left, i_right    : in    std_logic;
+	o_lights_L         : out std_logic_vector(2 downto 0);
+	o_lights_R         : out std_logic_vector(2 downto 0)
+  );
 end thunderbird_fsm;
 
 architecture thunderbird_fsm_arch of thunderbird_fsm is 
 
 -- CONSTANTS ------------------------------------------------------------------
-  
+    signal f_Q      : std_logic_vector(7 downto 0) := "10000000";
+    signal f_Q_next : std_logic_vector(7 downto 0) := "10000000";
 begin
 
 	-- CONCURRENT STATEMENTS --------------------------------------------------------	
+	f_Q_next(7)    <= f_Q(6) OR f_Q(5);
+	f_Q_next(6)    <= f_Q(7) AND i_left AND i_right;
+	f_Q_next(5)    <= f_Q(4);
+	f_Q_next(4)    <= f_Q(3);
+	f_Q_next(3)    <= f_Q(7) AND i_right;
+	f_Q_next(2)    <= f_Q(1);
+	f_Q_next(1)    <= f_Q(0);
+	f_Q_next(0)    <= f_Q(7) AND i_left;
+	
+	o_lights_R(2)  <= f_Q(0) OR f_Q(3);
+	o_lights_R(1)  <= f_Q(0) OR f_Q(3) OR f_Q(2);
+	o_lights_R(0)  <= f_Q(0) OR f_Q(3) OR f_Q(2) OR f_Q(1);
+	
+	o_lights_L(0)  <= f_Q(0) OR f_Q(4) OR f_Q(5) OR f_Q(6);
+	o_lights_L(1)  <= f_Q(0) OR f_Q(5) OR f_Q(6);
+	o_lights_L(2)  <= f_Q(0) OR f_Q(6);
 	
     ---------------------------------------------------------------------------------
 	
 	-- PROCESSES --------------------------------------------------------------------
-    
+    register_proc : process (i_clk)
+    begin
+        if rising_edge(i_clk) then
+            if i_reset = '1' then
+                f_Q <= "10000000";
+            else
+                f_Q <= f_Q_next;
+            end if;
+        end if;
+    end process register_proc;
 	-----------------------------------------------------					   
 				  
 end thunderbird_fsm_arch;
