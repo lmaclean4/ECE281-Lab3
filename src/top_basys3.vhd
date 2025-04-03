@@ -86,18 +86,40 @@ end top_basys3;
 architecture top_basys3_arch of top_basys3 is 
   
 	-- declare components
-
+    signal s_slow_clk : std_logic := '0';
+    
+    signal s_lights_L : std_logic_vector(2 downto 0);
+    signal s_lights_R : std_logic_vector(2 downto 0);
   
 begin
 	-- PORT MAPS ----------------------------------------
-
+    U_clock_divider : entity work.clock_divider
+        generic map (
+            k_DIV => 12500000
+        )
+    port map (
+        i_clk   => clk,
+        i_reset => btnL,
+        o_clk   => s_slow_clk
+    );
+    
+    U_thunderbird_fsm : entity work.thunderbird_fsm
+        port map (
+            i_clk      => s_slow_clk,
+            i_reset    => btnL,
+            i_left     => sw(15),
+            i_right    => sw(0),
+            o_lights_L => s_lights_L,
+            o_lights_R => s_lights_R
+        );
 	
 	
 	-- CONCURRENT STATEMENTS ----------------------------
 	
 	-- ground unused LEDs
 	-- leave unused switches UNCONNECTED
-	
+	led(2 downto 0) <= s_lights_R;
+	led(15 downto 13) <= s_lights_L;
 	-- Ignore the warnings associated with these signals
 	-- Alternatively, you can create a different board implementation, 
 	--   or make additional adjustments to the constraints file
